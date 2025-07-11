@@ -37,6 +37,7 @@ public class CUI {
 				System.out.println("1: Reservation");
 				System.out.println("2: Check-in");
 				System.out.println("3: Check-out");
+				System.out.println("8: Cancel");
 				System.out.println("9: End");
 				System.out.print("> ");
 
@@ -61,6 +62,9 @@ public class CUI {
 						break;
 					case 3:
 						checkOutRoom();
+						break;
+					case 8:
+						cancelReservationRoom();
 						break;
 				}
 			}
