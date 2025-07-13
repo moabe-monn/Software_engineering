@@ -17,6 +17,7 @@ def make_reservation(room, guests, checkin, checkout):
     """
     room:     str         -- 部屋タイプ
     guests:   int         -- 人数
+    name:     str         -- 予約者名
     checkin:  date object -- チェックイン日
     checkout: date object -- チェックアウト日
     """
@@ -24,6 +25,7 @@ def make_reservation(room, guests, checkin, checkout):
     # 12桁の予約IDを生成
     res_id = uuid.uuid4().hex[:12]
     data["reservations"][res_id] = {
+        "name":       name,
         "room":       room,
         "guests":     guests,
         "checkin":    checkin.strftime("%Y/%m/%d"),
