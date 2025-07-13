@@ -12,12 +12,17 @@ def save_data(d):
     with open(DATA_FILE, "w") as f:
         json.dump(d, f, indent=2)
 
-def check_in(res_id):
+def check_in(res_id, name):
     d = load_data()
     if res_id not in d["reservations"]:
         print("Reservation not found.")
         return None
     info = d["reservations"][res_id]
+
+    if info.get("name") != name:
+        print("Reservation name does not match.")
+        return None
+
     if info["checked_in"]:
         print("Already checked in.")
         return info["room_number"]
