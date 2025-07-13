@@ -63,6 +63,11 @@ def handle_reservation():
     if guests is None:
         return
 
+    name = input("Input guest name\n> ").strip()
+    if not name:
+        print("Invalid name.")
+        return
+
     # チェックイン日入力（再入力ループ）
     today = date.today()
     while True:
@@ -100,10 +105,11 @@ def handle_reservation():
 
 def handle_checkin():
     res_id = input("Input reservation number\n> ").strip()
-    if res_id:
-        check_in(res_id)
+    name = input("Input guest name\n> ").strip()
+    if res_id and name:
+        check_in(res_id, name)
     else:
-        print("Invalid reservation number.")
+        print("Invalid reservation number or name.")
 
 def handle_checkout():
     room_number = input("Input room number\n> ").strip()
