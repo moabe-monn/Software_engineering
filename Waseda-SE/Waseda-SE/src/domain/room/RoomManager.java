@@ -63,7 +63,7 @@ public class RoomManager {
 
 	private int getMaxAvailableQty() throws RoomException {
 		RoomDao roomDao = getRoomDao();
-		List rooms = roomDao.getRooms();
+		List<Room> rooms = roomDao.getRooms();
 		return rooms.size();
 	}
 
@@ -73,7 +73,7 @@ public class RoomManager {
 		}
 		RoomDao roomDao = getRoomDao();
 		// Obtain all of empty available rooms
-		List emptyRooms = roomDao.getEmptyRooms();
+		List<Room> emptyRooms = roomDao.getEmptyRooms();
 		// If there is no empty available rooms
 		if (emptyRooms.size() == 0) {
 			RoomException exception = new RoomException(RoomException.CODE_EMPTYROOM_NOT_FOUND);
@@ -89,7 +89,7 @@ public class RoomManager {
 	public Date removeCustomer(String roomNumber) throws RoomException, NullPointerException {
 		if (roomNumber == null) {
 			throw new NullPointerException("roomNumber");
-		}
+		} 
 		RoomDao roomDao = getRoomDao();
 		Room room = roomDao.getRoom(roomNumber);
 		//If corresponding room does not exist

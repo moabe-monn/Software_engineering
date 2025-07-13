@@ -7,6 +7,30 @@
       "checkout": "2025/07/29",
       "checked_in": false,
       "room_number": null
+    },
+    "a0f608fe0aa5": {
+      "room": "Single",
+      "guests": 1,
+      "checkin": "2025/08/11",
+      "checkout": "2025/08/13",
+      "checked_in": false,
+      "room_number": null
+    },
+    "0aaca27a3929": {
+      "room": "Single",
+      "guests": 1,
+      "checkin": "2025/08/11",
+      "checkout": "2025/08/13",
+      "checked_in": false,
+      "room_number": null
+    },
+    "f50b3b6080ea": {
+      "room": "Double",
+      "guests": 2,
+      "checkin": "2025/09/11",
+      "checkout": "2025/09/13",
+      "checked_in": false,
+      "room_number": null
     }
   }
 }

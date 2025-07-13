@@ -68,7 +68,7 @@ def handle_reservation():
         print("Invalid name.")
         return
 
-    # チェックイン日入力（再入力ループ）
+    # チェックイン日入力
     today = date.today()
     while True:
         checkin = input_date("check-in")
@@ -79,7 +79,7 @@ def handle_reservation():
             continue
         break
 
-    # チェックアウト日入力（再入力ループ）
+    # チェックアウト日入力
     while True:
         checkout = input_date("check-out")
         if checkout is None:
@@ -93,15 +93,17 @@ def handle_reservation():
     nights = (checkout - checkin).days
     cost = PRICES.get(room, 0) * nights
 
-    # 予約登録
-    res_id = make_reservation(room, guests, checkin, checkout)
+    # 予約登録：name を引数に追加
+    res_id = make_reservation(room, guests, name, checkin, checkout)
 
     # 完了メッセージ
     print("\nReservation has been completed.")
-    print(f"Arrival (staying) date is {checkin.strftime('%Y/%m/%d')}.")
-    print(f"The checkout date will be {checkout.strftime('%Y/%m/%d')}.")
+    print(f"Arrival (staying) date is {checkin.strftime('%Y/%m/%d')}." )
+    print(f"The checkout date will be {checkout.strftime('%Y/%m/%d')}." )
     print(f"The cost will be ￥{cost:,}")
     print(f"Reservation number is {res_id}.")
+
+# 以下は既存の handle_checkin, handle_checkout, handle_cancel, main をそのまま使用
 
 def handle_checkin():
     res_id = input("Input reservation number\n> ").strip()
@@ -111,19 +113,18 @@ def handle_checkin():
     else:
         print("Invalid reservation number or name.")
 
+
 def handle_checkout():
     room_number = input("Input room number\n> ").strip()
     if not room_number:
         print("Invalid room number.")
         return
 
-    # data.json から関連情報を取得
     with open(DATA_FILE, "r") as f:
         data = json.load(f)
 
-    # room_number に対応する予約を検索
     reservation = None
-    for res_id, info in data["reservations"].items():
+    for res_id, info in data.get("reservations", {}).items():
         if info.get("room_number") == room_number:
             reservation = {"id": res_id, **info}
             break
@@ -132,26 +133,19 @@ def handle_checkout():
         print("Room number not found.")
         return
 
-    # 予約時に指定したチェックアウト日を文字列で取り出す
-    checkout_str = reservation["checkout"]  # e.g. "2025/09/15"
-    # チェックイン日も必要なら同様に reservation["checkin"]
-
-    # 宿泊日数と料金を計算するには、文字列を date に戻す
-    checkin_date  = datetime.strptime(reservation["checkin"],  "%Y/%m/%d").date()
-    checkout_date = datetime.strptime(checkout_str,               "%Y/%m/%d").date()
+    checkout_str = reservation["checkout"]
+    checkin_date  = datetime.strptime(reservation["checkin"], "%Y/%m/%d").date()
+    checkout_date = datetime.strptime(checkout_str, "%Y/%m/%d").date()
     nights = (checkout_date - checkin_date).days
     cost   = PRICES.get(reservation["room"], 0) * nights
 
-    # チェックアウト実行（予約情報の削除）
     success = check_out(room_number)
     if not success:
-        return  # 内部でエラー表示済み
+        return
 
-    # 結果表示
     print(f"Checked out date is {checkout_str}.")
-    print(f"You stayed {nights} night(s).")
-    print(f"Total cost was ￥{cost:,}.")
-
+    print(f"You stayed {nights} night(s)." )
+    print(f"Total cost was ￥{cost:,}." )
 
 
 def handle_cancel():
@@ -160,7 +154,6 @@ def handle_cancel():
         print("Invalid reservation number.")
         return
 
-    # 存在チェック
     with open(DATA_FILE, "r") as f:
         data = json.load(f)
     if res_id not in data.get("reservations", {}):
@@ -177,6 +170,7 @@ def handle_cancel():
         print("\nCancel Reservation has been completed.")
     else:
         print("Reservation not found.")
+
 
 def main():
     while True:
