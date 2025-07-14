@@ -93,8 +93,12 @@ def handle_reservation():
     nights = (checkout - checkin).days
     cost = PRICES.get(room, 0) * nights
 
-    # 予約登録：name を引数に追加
-    res_id = make_reservation(room, guests, name, checkin, checkout)
+    # 予約登録：部屋満室時にエラーをキャッチ
+    try:
+        res_id = make_reservation(room, guests, name, checkin, checkout)
+    except RuntimeError as e:
+        print(e)
+        return
 
     # 完了メッセージ
     print("\nReservation has been completed.")
@@ -103,7 +107,6 @@ def handle_reservation():
     print(f"The cost will be ￥{cost:,}")
     print(f"Reservation number is {res_id}.")
 
-# 以下は既存の handle_checkin, handle_checkout, handle_cancel, main をそのまま使用
 
 def handle_checkin():
     res_id = input("Input reservation number\n> ").strip()

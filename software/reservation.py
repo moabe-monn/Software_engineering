@@ -1,9 +1,20 @@
 #!/usr/bin/env python3
 import json
 import uuid
-from datetime import datetime
+from datetime import datetime, date
 
+# データファイル
 DATA_FILE = "data.json"
+
+# 部屋タイプごとの部屋番号レンジ設定
+ROOM_RANGES = {
+    "Single": (101, 199),
+    "Double": (201, 299),
+    "Twin":   (301, 399),
+    "Deluxe": (401, 499),
+    "Suite":  (501, 599),
+}
+
 
 
 def load_data():
@@ -22,27 +33,50 @@ def save_data(data):
         json.dump(data, f, ensure_ascii=False, indent=2)
 
 
-def make_reservation(room: str, guests: int, name: str, checkin: datetime, checkout: datetime) -> str:
+def assign_room_number(room_type: str, data: dict, new_checkin: date, new_checkout: date) -> int:
     """
-    新規予約を作成し、予約IDを返す
+    指定された部屋タイプの空き部屋番号を範囲内から割り当てる。
+    既存予約と日付が重複しない部屋を選定。
+    空きがなければ None を返す
 
-    Parameters:
-    - room:     str       -- 部屋タイプ
-    - guests:   int       -- 人数
-    - name:     str       -- 予約者名
-    - checkin:  datetime  -- チェックイン日
-    - checkout: datetime  -- チェックアウト日
-
-    Returns:
-    - str: 生成した予約ID
+    new_checkin: チェックイン日
+    new_checkout: チェックアウト日（滞在最終日の翌日）
     """
-    # 既存データ読み込み
+    start, end = ROOM_RANGES.get(room_type, (0, -1))
+    used = set()
+    # 既存予約をチェック
+    for info in data.get("reservations", {}).values():
+        room_no = info.get("room_number")
+        if not room_no:
+            continue
+        existing_ci = datetime.strptime(info["checkin"], "%Y/%m/%d").date()
+        existing_co = datetime.strptime(info["checkout"], "%Y/%m/%d").date()
+        # 重複判定: [new_ci, new_co) と [existing_ci, existing_co) が重なる場合
+        if not (new_checkout <= existing_ci or new_checkin >= existing_co):
+            used.add(int(room_no))
+    # 空き部屋を探索
+    for num in range(start, end + 1):
+        if num not in used:
+            return num
+    return None
+
+
+def make_reservation(room: str, guests: int, name: str, checkin: date, checkout: date) -> str:
+    """
+    新規予約を作成し、予約IDを返す。
+
+    指定日の重複をチェックして部屋番号を割り当て、
+    満室の場合は例外を発生させる
+    """
     data = load_data()
 
-    # 12桁の予約IDを生成
+    # 部屋番号を割り当て（重複判定を含む）
+    room_number = assign_room_number(room, data, checkin, checkout)
+    if room_number is None:
+        raise RuntimeError(f"No rooms available for type {room} on {checkin.strftime('%Y/%m/%d')} to {checkout.strftime('%Y/%m/%d')}.")
+
     res_id = uuid.uuid4().hex[:12]
 
-    # 予約データを構築
     reservation = {
         "name":       name,
         "room":       room,
@@ -50,13 +84,10 @@ def make_reservation(room: str, guests: int, name: str, checkin: datetime, check
         "checkin":    checkin.strftime("%Y/%m/%d"),
         "checkout":   checkout.strftime("%Y/%m/%d"),
         "checked_in": False,
-        "room_number": None
+        "room_number": str(room_number)
     }
 
-    # データに追加
     data.setdefault("reservations", {})[res_id] = reservation
-
-    # ファイルに保存
     save_data(data)
-
     return res_id
+
