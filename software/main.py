@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import sys
 import json
+import re
 from datetime import datetime, date
 from reservation import make_reservation
 from checkin import check_in
@@ -11,6 +12,9 @@ DATA_FILE = "data.json"
 
 ROOM_TYPES = ["Single", "Double", "Twin", "Deluxe", "Suite"]
 
+# 電話番号の正規表現パターン (XXX-XXXX-XXXX)
+PHONE_PATTERN = re.compile(r"^\d{3}-\d{4}-\d{4}$")
+
 # １泊あたりの料金マップ
 PRICES = {
     "Single":  8000,
@@ -20,6 +24,16 @@ PRICES = {
     "Suite": 200000,
 }
 
+# 電話番号入力と検証
+def input_phone():
+    print("Input phone number (XXX-XXXX-XXXX)")
+    p = input("> ").strip()
+    if not PHONE_PATTERN.match(p):
+        print("Invalid phone number format.")
+        return None
+    return p
+
+# 部屋タイプ入力
 def input_room_type():
     print("Input room type (Single, Double, Twin, Deluxe, Suite)")
     rt = input("> ").strip().title()
@@ -28,6 +42,7 @@ def input_room_type():
         return None
     return rt
 
+# 宿泊人数入力
 def input_num_guests(room_type):
     print("Input number of guests")
     try:
@@ -45,6 +60,7 @@ def input_num_guests(room_type):
             return None
     return n
 
+# 日付入力
 def input_date(prompt):
     print(f"Input {prompt} date in the form of yyyy/MM/dd")
     s = input("> ").strip()
@@ -54,6 +70,7 @@ def input_date(prompt):
         print(f"Invalid {prompt} date.")
         return None
 
+# 予約処理
 def handle_reservation():
     room = input_room_type()
     if not room:
@@ -67,13 +84,12 @@ def handle_reservation():
     if not name:
         print("Invalid name.")
         return
-    
-    phone = input("Input phone number\n> ").strip()
-    if not phone:
-        print("Invalid phone number.")
+
+    phone = input_phone()
+    if phone is None:
         return
 
-    # チェックイン日入力
+    # チェックイン日
     today = date.today()
     while True:
         checkin = input_date("check-in")
@@ -84,7 +100,7 @@ def handle_reservation():
             continue
         break
 
-    # チェックアウト日入力
+    # チェックアウト日
     while True:
         checkout = input_date("check-out")
         if checkout is None:
@@ -94,35 +110,34 @@ def handle_reservation():
             continue
         break
 
-    # 宿泊日数と料金計算
+    # 料金計算
     nights = (checkout - checkin).days
     cost = PRICES.get(room, 0) * nights
 
-    # 予約登録：部屋満室時にエラーをキャッチ
     try:
-        res_id = make_reservation(room, guests, name, checkin, checkout)
+        res_id = make_reservation(room, guests, name, phone, checkin, checkout)
     except RuntimeError as e:
         print(e)
         return
 
     # 完了メッセージ
     print("\nReservation has been completed.")
-    print(f"Arrival (staying) date is {checkin.strftime('%Y/%m/%d')}." )
-    print(f"The checkout date will be {checkout.strftime('%Y/%m/%d')}." )
-    print(f"The cost will be ￥{cost:,}")
-    print(f"Reservation number is {res_id}.")
+    print(f"Arrival date: {checkin.strftime('%Y/%m/%d')}")
+    print(f"Checkout date: {checkout.strftime('%Y/%m/%d')}")
+    print(f"Cost: ￥{cost:,}")
+    print(f"Reservation number: {res_id}")
 
-
+# チェックイン処理
 def handle_checkin():
     res_id = input("Input reservation number\n> ").strip()
-    name = input("Input guest name\n> ").strip()
-    phone  = input("Input phone number\n> ").strip()
-    if res_id and name:
-        check_in(res_id, name, phone)
-    else:
+    name   = input("Input guest name\n> ").strip()
+    phone  = input_phone()
+    if not res_id or not name or phone is None:
         print("Invalid reservation number, name or phone.")
+        return
+    check_in(res_id, name, phone)
 
-
+# チェックアウト処理
 def handle_checkout():
     room_number = input("Input room number\n> ").strip()
     if not room_number:
@@ -152,11 +167,11 @@ def handle_checkout():
     if not success:
         return
 
-    print(f"Checked out date is {checkout_str}.")
-    print(f"You stayed {nights} night(s)." )
-    print(f"Total cost was ￥{cost:,}." )
+    print(f"Checked out date: {checkout_str}")
+    print(f"Stayed {nights} night(s)")
+    print(f"Total cost: ￥{cost:,}")
 
-
+# キャンセル処理
 def handle_cancel():
     res_id = input("Input reservation number\n> ").strip()
     if not res_id:
@@ -176,11 +191,11 @@ def handle_cancel():
 
     success = cancel_reservation(res_id)
     if success:
-        print("\nCancel Reservation has been completed.")
+        print("Cancel Reservation has been completed.")
     else:
         print("Reservation not found.")
 
-
+# メインループ
 def main():
     while True:
         print("\nMenu")

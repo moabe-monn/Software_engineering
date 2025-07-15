@@ -31,15 +31,6 @@
       "checkout": "2025/09/13",
       "checked_in": false,
       "room_number": null
-    },
-    "3fe574b2e3af": {
-      "name": "S",
-      "room": "Single",
-      "guests": 1,
-      "checkin": "2025/09/10",
-      "checkout": "2025/09/11",
-      "checked_in": false,
-      "room_number": "101"
     }
   }
 }

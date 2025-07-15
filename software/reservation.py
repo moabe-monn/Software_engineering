@@ -15,8 +15,6 @@ ROOM_RANGES = {
     "Suite":  (501, 599),
 }
 
-
-
 def load_data():
     """
     データファイルからJSONを読み込んで返す
@@ -24,14 +22,12 @@ def load_data():
     with open(DATA_FILE, "r", encoding="utf-8") as f:
         return json.load(f)
 
-
 def save_data(data):
     """
     JSONデータをデータファイルに保存する
     """
     with open(DATA_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
-
 
 def assign_room_number(room_type: str, data: dict, new_checkin: date, new_checkout: date) -> int:
     """
@@ -60,8 +56,7 @@ def assign_room_number(room_type: str, data: dict, new_checkin: date, new_checko
             return num
     return None
 
-
-def make_reservation(room: str, guests: int, name: str, checkin: date, checkout: date) -> str:
+def make_reservation(room: str, guests: int, name: str, phone_number: str, checkin: date, checkout: date) -> str:
     """
     新規予約を作成し、予約IDを返す。
 
@@ -73,21 +68,28 @@ def make_reservation(room: str, guests: int, name: str, checkin: date, checkout:
     # 部屋番号を割り当て（重複判定を含む）
     room_number = assign_room_number(room, data, checkin, checkout)
     if room_number is None:
-        raise RuntimeError(f"No rooms available for type {room} on {checkin.strftime('%Y/%m/%d')} to {checkout.strftime('%Y/%m/%d')}.")
+        raise RuntimeError(
+            f"No rooms available for type {room} on "
+            f"{checkin.strftime('%Y/%m/%d')} to {checkout.strftime('%Y/%m/%d')}."
+        )
 
+    # 予約ID を生成
     res_id = uuid.uuid4().hex[:12]
 
+    # 予約情報を作成（電話番号フィールドを追加）
     reservation = {
-        "name":       name,
-        "room":       room,
-        "guests":     guests,
-        "checkin":    checkin.strftime("%Y/%m/%d"),
-        "checkout":   checkout.strftime("%Y/%m/%d"),
-        "checked_in": False,
-        "room_number": str(room_number)
+        "name":         name,
+        "phone_number": phone_number,
+        "room":         room,
+        "guests":       guests,
+        "checkin":      checkin.strftime("%Y/%m/%d"),
+        "checkout":     checkout.strftime("%Y/%m/%d"),
+        "checked_in":   False,
+        "room_number":  str(room_number),
     }
 
+    # data.json に保存
     data.setdefault("reservations", {})[res_id] = reservation
     save_data(data)
-    return res_id
 
+    return res_id
