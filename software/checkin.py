@@ -12,7 +12,7 @@ def save_data(d):
     with open(DATA_FILE, "w") as f:
         json.dump(d, f, indent=2)
 
-def check_in(res_id, name):
+def check_in(res_id, name, phone_number):
     d = load_data()
     if res_id not in d["reservations"]:
         print("Reservation not found.")
@@ -22,6 +22,11 @@ def check_in(res_id, name):
     if info.get("name") != name:
         print("Reservation name does not match.")
         return None
+    
+    if info.get("phone") and info.get("phone") != phone_number:
+        print("Reservation phone number does not match.")
+        return None
+
 
     if info["checked_in"]:
         print("Already checked in.")
@@ -30,6 +35,7 @@ def check_in(res_id, name):
     room_number = str(random.randint(100, 999))
     info["checked_in"] = True
     info["room_number"] = room_number
+    info["phone_number"] = phone_number
     save_data(d)
     print("Check-in has been completed.")
     print(f"Room number is {room_number}.")

@@ -8,7 +8,7 @@ DATA_FILE = "data.json"
 
 # 部屋タイプごとの部屋番号レンジ設定
 ROOM_RANGES = {
-    "Single": (101, 199),
+    "Single": (101, 102),
     "Double": (201, 299),
     "Twin":   (301, 399),
     "Deluxe": (401, 499),

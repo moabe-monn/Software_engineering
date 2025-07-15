@@ -67,6 +67,11 @@ def handle_reservation():
     if not name:
         print("Invalid name.")
         return
+    
+    phone = input("Input phone number\n> ").strip()
+    if not phone:
+        print("Invalid phone number.")
+        return
 
     # チェックイン日入力
     today = date.today()
@@ -111,10 +116,11 @@ def handle_reservation():
 def handle_checkin():
     res_id = input("Input reservation number\n> ").strip()
     name = input("Input guest name\n> ").strip()
+    phone  = input("Input phone number\n> ").strip()
     if res_id and name:
-        check_in(res_id, name)
+        check_in(res_id, name, phone)
     else:
-        print("Invalid reservation number or name.")
+        print("Invalid reservation number, name or phone.")
 
 
 def handle_checkout():
